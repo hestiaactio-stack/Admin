@@ -1,29 +1,7 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Generar SHA-256</title>
-</head>
-<body style="font-family: system-ui; background:#121212; color:#fff; padding:2rem;">
-  <h2>Hash SHA-256 de contraseña</h2>
-  <p>Escribí tu contraseña y copias el hash resultante.</p>
-  <input id="pwd" type="text" placeholder="contraseña" style="width:100%; padding:0.5rem; font-size:1rem; margin-bottom:1rem;">
-  <button id="go" style="padding:0.6rem 1rem; font-size:1rem; cursor:pointer;">Generar hash</button>
-  <div style="margin-top:1rem;">
-    <label>Hash:</label>
-    <pre id="out" style="background:#222; padding:0.5rem; border-radius:4px; overflow-x:auto;"></pre>
-  </div>
-  <script>
-    async function sha256(str) {
-      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-    }
-    document.getElementById('go').addEventListener('click', async () => {
-      const pwd = document.getElementById('pwd').value;
-      if (!pwd) return;
-      const h = await sha256(pwd);
+
       document.getElementById('out').textContent = h;
     });
   </script>
 </body>
 </html>
+
