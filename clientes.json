@@ -1,0 +1,18 @@
+[
+  {
+    "email": "cliente1@hestia.com",
+    "password": "1234",
+    "nombre": "Juan Pérez",
+    "unidad": "3B",
+    "saldo": "$12.500",
+    "qr": "https://api.qrserver.com/v1/create-qr-code/?data=MP-JUANPEREZ&size=150x150"
+  },
+  {
+    "email": "cliente2@hestia.com",
+    "password": "5678",
+    "nombre": "Ana Torres",
+    "unidad": "1A",
+    "saldo": "$9.300",
+    "qr": "https://api.qrserver.com/v1/create-qr-code/?data=MP-ANATORRES&size=150x150"
+  }
+]

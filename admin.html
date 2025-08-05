@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>HESTIA - Panel Administrativo</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root { --gold:#d4af37; }
+    * { box-sizing:border-box; }
+    body {
+      background: url('Puerto_Madero.jpeg') center/cover no-repeat fixed;
+      font-family: 'Segoe UI',sans-serif;
+      color: white;
+      padding: 70px 12px;
+      margin:0;
+    }
+    body::before {
+      content:""; position:fixed; inset:0;
+      background: rgba(0,0,0,0.5); z-index:0;
+    }
+    .container { max-width:1200px; margin:auto; position:relative; z-index:1; }
+    h1 { color: var(--gold); margin:0 0 12px; }
+    .top { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:10px; }
+    .search-group { display:flex; gap:8px; flex-wrap:wrap; flex:1; }
+    .search-group input {
+      padding:8px 10px; border-radius:5px; border:1px solid var(--gold);
+      background:#1f1f1f; color:#fff; flex:1; min-width:150px;
+    }
+    .btn { background: var(--gold); border:none; padding:8px 14px; border-radius:5px; font-weight:600; cursor:pointer; color:#121212; margin-right:4px; }
+    .btn-small { padding:6px 10px; font-size:.85rem; }
+    .controls { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px; align-items:center; }
+    table {
+      width:100%; border-collapse:collapse; margin-top:6px;
+      background: rgba(20,20,20,0.9); border:1px solid var(--gold); font-size:.9rem;
+    }
+    th, td { padding:8px 6px; border:1px solid var(--gold); text-align:left; vertical-align:top; }
+    th { background:#222; position:sticky; top:0; z-index:2; }
+    td[contenteditable] { background: rgba(255,255,255,0.03); outline:none; }
+    .comment-icon { cursor:pointer; background: rgba(255,255,255,0.1); padding:4px 8px; border-radius:4px; font-size:.8rem; }
+    .logout { position:fixed; top:10px; right:10px; background:#c47e0c; border:none; padding:8px 12px; border-radius:5px; cursor:pointer; font-weight:600; color:#fff; }
+    .small { font-size:.75rem; color:#ccc; }
+    .modal-backdrop {
+      position:fixed; inset:0; background:rgba(0,0,0,0.7);
+      display:none; align-items:center; justify-content:center;
+    }
+    .modal {
+      background:#1e1e1e; border:2px solid var(--gold); border-radius:8px; padding:20px;
+      width:400px; max-width:95%; position:relative; color:#fff;
+    }
+    .close-btn {
+      position:absolute; top:8px; right:8px; background:rgba(255,255,255,0.1);
+      border:none; padding:4px 8px; cursor:pointer; border-radius:4px; color:#fff;
+    }
+    .comment-list { max-height:200px; overflow:auto; margin-bottom:8px; background:#111; padding:6px; border-radius:5px; }
+    .comment-item { background: rgba(50,50,50,0.9); padding:6px; border-radius:4px; margin-bottom:6px; }
+    .tag { background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; font-size:0.65rem; margin-right:4px; }
+    .info-line { margin-bottom:4px; }
+  </style>
+</head>
+<body>
+  <button class="logout" id="logoutBtn">Cerrar sesión</button>
+  <div class="container">
+    <div class="top">
+      <h1>Panel de administración</h1>
+      <div class="search-group">
+        <input id="filtroApellido" placeholder="Apellido" />
+        <input id="filtroUnidad" placeholder="Unidad funcional" />
+        <input id="filtroDireccion" placeholder="Dirección" />
+        <button class="btn btn-small" id="buscar">Buscar</button>
+        <button class="btn btn-small" id="reset">Reiniciar</button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-small" id="exportarCSV">Exportar CSV</button>
+      <input type="file" id="importarArchivo" accept=".csv" />
+      <div class="small">CSV columnas: uid,apellido,unidad,direccion,propietario,saldoDeudor,cargosImpago,saldosAFavor</div>
+    </div>
+
+    <div id="tablaContenedor">
+      <table id="tablaAdmin">
+        <thead>
+          <tr>
+            <th>UID</th>
+            <th>Apellido</th>
+            <th>Unidad</th>
+            <th>Dirección</th>
+            <th>Propietario</th>
+            <th>Saldo deudor</th>
+            <th>Cargos</th>
+            <th>Saldos a favor</th>
+            <th>Comentarios</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal comentarios -->
+  <div id="modalComentarios" class="modal-backdrop">
+    <div class="modal">
+      <button class="close-btn" id="cerrarModal">X</button>
+      <h2>Comentarios de usuario</h2>
+      <div id="comentariosExistentes" class="comment-list"></div>
+      <div>
+        <label for="nuevoTexto">Agregar comentario:</label><br/>
+        <textarea id="nuevoTexto" rows="4" style="width:100%; background:#121212; color:#fff; border:1px solid var(--gold); border-radius:5px; padding:6px;"></textarea>
+      </div>
+      <div style="margin-top:8px;">
+        <button class="btn" id="guardarComentario">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db, isAdmin } from './firebase-config.js';
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+    import {
+      collection,
+      getDocs,
+      doc,
+      updateDoc,
+      setDoc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+    const logoutBtn = document.getElementById("logoutBtn");
+    const tablaBody = document.querySelector("#tablaAdmin tbody");
+    let usuariosCache = [];
+    let usuarioSeleccionado = null;
+    let filtrosActuales = {};
+
+    function descargarCSV(rows, header) {
+      const csv = [header, ...rows]
+        .map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(","))
+        .join("\n");
+      const blob = new Blob([csv], { type: "text/csv" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `usuarios_${Date.now()}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function mostrarUsuarios(list) {
+      tablaBody.innerHTML = "";
+      if (list.length === 0) {
+        tablaBody.innerHTML = `<tr><td colspan="10" style="text-align:center;">No hay usuarios que coincidan.</td></tr>`;
+        return;
+      }
+      list.forEach(u => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${u.uid}</td>
+          <td contenteditable="true" data-field="apellido">${u.apellido||""}</td>
+          <td contenteditable="true" data-field="unidad">${u.unidad||""}</td>
+          <td contenteditable="true" data-field="direccion">${u.direccion||""}</td>
+          <td contenteditable="true" data-field="propietario">${u.propietario||""}</td>
+          <td contenteditable="true" data-field="saldoDeudor">${u.saldoDeudor!=null?u.saldoDeudor:""}</td>
+          <td contenteditable="true" data-field="cargosImpago">${u.cargosImpago!=null?u.cargosImpago:""}</td>
+          <td contenteditable="true" data-field="saldosAFavor">${u.saldosAFavor!=null?u.saldosAFavor:""}</td>
+          <td><span class="comment-icon" data-uid="${u.uid}">Ver / Agregar</span></td>
+          <td><button class="btn btn-small guardar" data-uid="${u.uid}">Guardar</button></td>
+        `;
+        tablaBody.appendChild(tr);
+      });
+
+      // guardar cambios
+      document.querySelectorAll(".guardar").forEach(btn => {
+        btn.onclick = async () => {
+          const uid = btn.dataset.uid;
+          const row = btn.closest("tr");
+          const updates = {};
+          row.querySelectorAll("[contenteditable]").forEach(td => {
+            const field = td.dataset.field;
+            let val = td.textContent.trim();
+            if (["saldoDeudor","cargosImpago","saldosAFavor"].includes(field)) {
+              val = parseFloat(val) || 0;
+            }
+            updates[field] = val;
+          });
+          await updateDoc(doc(db, "usuarios", uid), updates);
+          alert("Guardado: " + uid);
+          cargarUsuarios(filtrosActuales);
+        };
+      });
+
+      // comentarios
+      document.querySelectorAll(".comment-icon").forEach(span => {
+        span.onclick = async () => {
+          const uid = span.dataset.uid;
+          usuarioSeleccionado = uid;
+          const userRef = doc(db, "usuarios", uid);
+          const snapshot = await getDoc(userRef);
+          const data = snapshot.exists() ? snapshot.data() : {};
+          const comentarios = data.comentarios || [];
+          const listEl = document.getElementById("comentariosExistentes");
+          listEl.innerHTML = comentarios.map(c => `
+            <div class="comment-item">
+              <div class="info-line">
+                <span class="tag">${c.admin||"admin"}</span>
+                <span style="font-size:.7rem;">${c.fecha}</span>
+              </div>
+              <div>${c.texto}</div>
+            </div>
+          `).join("");
+          document.getElementById("nuevoTexto").value = "";
+          document.getElementById("modalComentarios").style.display = "flex";
+        };
+      });
+    }
+
+    async function cargarUsuarios(filtros = {}) {
+      tablaBody.innerHTML = "<tr><td colspan='10'>Cargando...</td></tr>";
+      const col = collection(db, "usuarios");
+      const snapshot = await getDocs(col);
+      let list = [];
+      snapshot.forEach(d => list.push({ uid: d.id, ...d.data() }));
+
+      if (filtros.apellido) {
+        list = list.filter(u => (u.apellido||"").toLowerCase().includes(filtros.apellido.toLowerCase()));
+      }
+      if (filtros.unidad) {
+        list = list.filter(u => (u.unidad||"").toLowerCase().includes(filtros.unidad.toLowerCase()));
+      }
+      if (filtros.direccion) {
+        list = list.filter(u => (u.direccion||"").toLowerCase().includes(filtros.direccion.toLowerCase()));
+      }
+      usuariosCache = list;
+      mostrarUsuarios(list);
+    }
+
+    document.getElementById("buscar").addEventListener("click", () => {
+      filtrosActuales = {
+        apellido: document.getElementById("filtroApellido").value,
+        unidad: document.getElementById("filtroUnidad").value,
+        direccion: document.getElementById("filtroDireccion").value
+      };
+      cargarUsuarios(filtrosActuales);
+    });
+
+    document.getElementById("reset").addEventListener("click", () => {
+      document.getElementById("filtroApellido").value = "";
+      document.getElementById("filtroUnidad").value = "";
+      document.getElementById("filtroDireccion").value = "";
+      filtrosActuales = {};
+      cargarUsuarios({});
+    });
+
+    document.getElementById("exportarCSV").addEventListener("click", () => {
+      if (!usuariosCache.length) return alert("Nada para exportar.");
+      const header = ["uid","apellido","unidad","direccion","propietario","saldoDeudor","cargosImpago","saldosAFavor"];
+      const rows = usuariosCache.map(u => [
+        u.uid,
+        u.apellido||"",
+        u.unidad||"",
+        u.direccion||"",
+        u.propietario||"",
+        u.saldoDeudor||0,
+        u.cargosImpago||0,
+        u.saldosAFavor||0
+      ]);
+      descargarCSV(rows, header);
+    });
+
+    document.getElementById("importarArchivo").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const text = await file.text();
+      const lines = text.split("\n").filter(l => l.trim());
+      const [headerLine, ...rest] = lines;
+      const cols = headerLine.replace(/\r/g,"").split(",").map(h => h.replace(/(^"|"$/g,""));
+      for (const line of rest) {
+        const vals = line.replace(/\r/g,"").split(",").map(v => v.replace(/(^"|"$/g,""));
+        const obj = {};
+        cols.forEach((c,i) => obj[c] = vals[i]);
+        if (!obj.uid) continue;
+        if (obj.saldoDeudor) obj.saldoDeudor = parseFloat(obj.saldoDeudor);
+        if (obj.cargosImpago) obj.cargosImpago = parseFloat(obj.cargosImpago);
+        if (obj.saldosAFavor) obj.saldosAFavor = parseFloat(obj.saldosAFavor);
+        await setDoc(doc(db, "usuarios", obj.uid), obj, { merge: true });
+      }
+      alert("Importación completada.");
+      cargarUsuarios(filtrosActuales);
+    });
+
+    document.getElementById("cerrarModal").addEventListener("click", () => {
+      document.getElementById("modalComentarios").style.display = "none";
+    });
+
+    document.getElementById("guardarComentario").addEventListener("click", async () => {
+      if (!usuarioSeleccionado) return;
+      const texto = document.getElementById("nuevoTexto").value.trim();
+      if (!texto) return alert("Escribí algo.");
+      const userRef = doc(db, "usuarios", usuarioSeleccionado);
+      const snapshot = await getDoc(userRef);
+      const data = snapshot.exists() ? snapshot.data() : {};
+      const actuales = data.comentarios || [];
+      const nuevo = {
+        texto,
+        fecha: new Date().toLocaleString("es-AR"),
+        admin: auth.currentUser?.email || "admin"
+      };
+      await updateDoc(userRef, { comentarios: [...actuales, nuevo] });
+      alert("Comentario guardado.");
+      document.getElementById("modalComentarios").style.display = "none";
+      cargarUsuarios(filtrosActuales);
+    });
+
+    // validación admin
+    onAuthStateChanged(auth, async user => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+      const permiso = await isAdmin(user.uid);
+      if (!permiso) {
+        alert("No tenés permisos de administrador.");
+        window.location.href = "panel.html";
+        return;
+      }
+      cargarUsuarios({});
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      window.location.href = "login.html";
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HESTIA - Registro</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: url('Puerto_Madero.jpeg') center/cover no-repeat fixed;
+      color: #d4af37;
+      position: relative;
+      min-height: 100vh;
+      padding-top: 60px;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 0;
+    }
+
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      padding: 0 2rem;
+      z-index: 10;
+    }
+    .logo {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: gold;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    nav {
+      margin-left: 2rem;
+      display: flex;
+      gap: 1rem;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: background 0.3s;
+    }
+    nav a:hover {
+      background: rgba(212,175,55,0.3);
+    }
+    /* Ocultar el enlace a esta página */
+    nav a[href="registro.html"] {
+      display: none;
+    }
+
+    .register-container {
+      position: relative;
+      z-index: 1;
+      background: rgba(30,30,30,0.9);
+      border: 2px solid #d4af37;
+      border-radius: 10px;
+      padding: 2.5rem 3rem;
+      width: 90%;
+      max-width: 400px;
+      margin: 2rem auto;
+      box-shadow: 0 0 15px #d4af37aa;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #d4af37;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.3rem;
+      font-weight: 600;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"] {
+      width: 100%;
+      padding: 0.7rem 0.8rem;
+      margin-bottom: 1.2rem;
+      border: 1.5px solid #d4af37;
+      border-radius: 5px;
+      background-color: #121212;
+      color: #fff;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+    input:focus {
+      border-color: #c47e0c;
+      outline: none;
+      box-shadow: 0 0 5px #c47e0c;
+    }
+    .btn-register {
+      width: 100%;
+      background-color: #d4af37;
+      color: #121212;
+      font-weight: 700;
+      padding: 0.8rem 0;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: background-color 0.3s ease;
+    }
+    .btn-register:hover {
+      background-color: #c47e0c;
+    }
+    .links {
+      margin-top: 1rem;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .links a {
+      color: #d4af37;
+      text-decoration: none;
+      font-weight: 600;
+      margin: 0 0.7rem;
+      transition: color 0.3s ease;
+    }
+    .links a:hover {
+      color: #c47e0c;
+      text-decoration: underline;
+    }
+    .error-msg {
+      color: #e63946;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      text-align: center;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="index.html" class="logo">HESTIA</a>
+    <nav>
+      <a href="index.html">Inicio</a>
+      <a href="login.html">Iniciar sesión</a>
+      <a href="panel.html">Panel</a>
+      <a href="reclamos.html">Reclamos</a>
+      <a href="contacto.html">Contacto</a>
+    </nav>
+  </header>
+
+  <div class="register-container">
+    <h1>Registro</h1>
+    <form id="registerForm" autocomplete="off">
+      <div class="error-msg" id="errorMsg">Complete todos los campos correctamente.</div>
+
+      <label for="fullname">Nombre completo</label>
+      <input type="text" id="fullname" name="fullname" placeholder="Juan Pérez" required minlength="3" />
+
+      <label for="docnumber">Número de documento</label>
+      <input type="text" id="docnumber" name="docnumber" placeholder="DNI o Pasaporte" required minlength="5" />
+
+      <label for="unit">Unidad funcional</label>
+      <input type="text" id="unit" name="unit" placeholder="Ej: UF 3A" required minlength="1" />
+
+      <label for="phone">Teléfono</label>
+      <input type="tel" id="phone" name="phone" placeholder="+54 9 11 1234-5678" required pattern="^\+?\d{7,15}$" />
+
+      <label for="email">Correo electrónico</label>
+      <input type="email" id="email" name="email" placeholder="usuario@ejemplo.com" required autocomplete="username" />
+
+      <label for="password">Contraseña</label>
+      <input type="password" id="password" name="password" placeholder="Mínimo 6 caracteres" required minlength="6" autocomplete="new-password" />
+
+      <button type="submit" class="btn-register">Registrarse</button>
+    </form>
+    <div class="links">
+      <a href="login.html">¿Ya tenés cuenta? Iniciar sesión</a>
+    </div>
+  </div>
+
+  <script>
+    const registerForm = document.getElementById('registerForm');
+    const errorMsg = document.getElementById('errorMsg');
+
+    registerForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      errorMsg.style.display = 'none';
+
+      const fullname = registerForm.fullname.value.trim();
+      const docnumber = registerForm.docnumber.value.trim();
+      const unit = registerForm.unit.value.trim();
+      const phone = registerForm.phone.value.trim();
+      const email = registerForm.email.value.trim();
+      const password = registerForm.password.value;
+
+      if (
+        fullname.length < 3 ||
+        docnumber.length < 5 ||
+        unit.length < 1 ||
+        !phone.match(/^\+?\d{7,15}$/) ||
+        !email.includes('@') ||
+        password.length < 6
+      ) {
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      alert('Registro simulado exitoso. Ahora podés iniciar sesión.');
+      window.location.href = 'login.html';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HESTIA - Panel de Usuario</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: url('Puerto_Madero.jpeg') center/cover no-repeat fixed;
+      color: #d4af37;
+      position: relative;
+      min-height: 100vh;
+      padding-top: 60px;
+    }
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4); z-index: 0;
+    }
+    header {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 60px;
+      background: rgba(0,0,0,0.7);
+      display: flex; align-items: center; padding: 0 2rem;
+      z-index: 10;
+    }
+    .logo {
+      font-size: 1.8rem; font-weight: bold; color: gold;
+      cursor: pointer;
+    }
+    nav {
+      margin-left: 2rem; display: flex; gap: 1rem;
+    }
+    nav a[href="panel.html"] { display: none; }
+    nav a {
+      color: white; text-decoration: none; font-weight: 600;
+      padding: 0.5rem 1rem; border-radius: 4px;
+      transition: background 0.3s;
+    }
+    nav a:hover { background: rgba(212,175,55,0.3); }
+    #logoutBtn {
+      margin-left: auto;
+      background-color: #d4af37; color: #121212;
+      border: none; border-radius: 4px;
+      padding: 0.5rem 1rem; font-weight: 700;
+      cursor: pointer; transition: background 0.3s;
+    }
+    #logoutBtn:hover { background-color: #c47e0c; }
+    main {
+      position: relative; z-index: 1;
+      margin: 2rem auto; max-width: 1100px; padding: 0 1rem;
+    }
+    .box {
+      background: rgba(30,30,30,0.9);
+      border: 2px solid #d4af37;
+      border-radius: 10px;
+      padding: 1.5rem 2rem;
+      box-shadow: 0 0 10px #d4af37aa;
+      margin-bottom: 2rem;
+    }
+    .box h2 {
+      color: white;
+      margin-bottom: 1rem;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+    .summary-card {
+      background: rgba(50,50,50,0.8);
+      padding: 1rem;
+      border: 1px solid #d4af37;
+      border-radius: 8px;
+      position: relative;
+    }
+    .summary-card small {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.75rem;
+      color: #ccc;
+    }
+    .summary-value {
+      font-size: 1.6rem;
+      font-weight: bold;
+      margin-top: 4px;
+      color: #ffffff;
+    }
+    .link-row {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .link-btn {
+      background: rgba(212,175,55,0.1);
+      border: 1px solid #d4af37;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      text-decoration: none;
+      color: #d4af37;
+      font-weight: 600;
+      transition: background .2s;
+    }
+    .link-btn:hover {
+      background: rgba(212,175,55,0.2);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #d4af37;
+      padding: 0.6rem;
+      text-align: center;
+      color: white;
+    }
+    th {
+      background-color: #2b2b2b;
+      color: #d4af37;
+    }
+    footer {
+      position: relative; z-index: 1;
+      background: rgba(0,0,0,0.7);
+      text-align: center; padding: 1rem;
+      color: #ccc; font-size: 0.9rem;
+      border-top: 1px solid #d4af37;
+    }
+    .note {
+      font-size: 0.8rem;
+      color: #ccc;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="index.html" class="logo">HESTIA</a>
+    <nav>
+      <a href="index.html" class="nav-inicio">Inicio</a>
+      <a href="registro.html" class="nav-registro">Registro</a>
+      <a href="login.html" class="nav-login">Iniciar sesión</a>
+      <a href="panel.html" class="nav-panel">Mi Panel</a>
+      <a href="reclamos.html" class="nav-reclamos">Reclamos</a>
+      <a href="contacto.html" class="nav-contacto">Contacto</a>
+    </nav>
+    <button id="logoutBtn" style="display:none;">Cerrar sesión</button>
+  </header>
+  <main>
+    <div class="box" id="resumen-financiero">
+      <h2>Resumen financiero</h2>
+      <div class="summary-grid">
+        <div class="summary-card" id="saldo-deudor-card">
+          <small>Saldo deudor</small>
+          <div class="summary-value" id="saldo-deudor">$0,00</div>
+          <div class="note">Lo que debés actualmente.</div>
+        </div>
+        <div class="summary-card" id="cargos-impago-card">
+          <small>Cargos por impago</small>
+          <div class="summary-value" id="cargos-impago">$0,00</div>
+          <div class="note">Multas o recargos acumulados.</div>
+        </div>
+        <div class="summary-card" id="saldos-a-favor-card">
+          <small>Saldos a favor</small>
+          <div class="summary-value" id="saldos-a-favor">$0,00</div>
+          <div class="note">Créditos o pagos en excedente.</div>
+        </div>
+        <div class="summary-card" id="ultimo-pago-card">
+          <small>Último pago</small>
+          <div class="summary-value" id="ultimo-pago">-</div>
+          <div class="note">Fecha y monto del último abono.</div>
+        </div>
+      </div>
+      <div class="link-row">
+        <a href="historial_pagos.html" class="link-btn">Ver historial de pagos</a>
+        <a href="historial_deuda.html" class="link-btn">Ver historial de deuda</a>
+      </div>
+    </div>
+    <div class="box">
+      <h2>Mi Información de Propiedad</h2>
+      <table id="propietarios-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Propietario</th>
+            <th>Unidad</th>
+            <th>Saldo</th>
+            <th>Código QR</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Inquilinos</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="8">Cargando datos...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+  <footer>
+    © 2025 HESTIA - Administración de Consorcios
+  </footer>
+  <script type="module">
+    import { auth, db } from './firebase-config.js';
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+    import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+    const logoutBtn = document.getElementById("logoutBtn");
+    const navLogin = document.querySelector(".nav-login");
+    const navRegistro = document.querySelector(".nav-registro");
+    const navPanel = document.querySelector(".nav-panel");
+
+    function formatoMoneda(num) {
+      if (num == null || num === "") return "$0,00";
+      return new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 2 }).format(parseFloat(num));
+    }
+
+    onAuthStateChanged(auth, async user => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      logoutBtn.style.display = "inline-block";
+      navLogin.style.display = "none";
+      navRegistro.style.display = "none";
+      navPanel.style.display = "inline-block";
+
+      const userRef = doc(db, "usuarios", user.uid);
+      const snap = await getDoc(userRef);
+      if (!snap.exists()) {
+        await setDoc(userRef, {
+          propietario: user.email || "",
+          unidad: "",
+          direccion: "",
+          saldoDeudor: 0,
+          cargosImpago: 0,
+          saldosAFavor: 0,
+          ultimoPago: { fecha: "", monto: 0 },
+          propiedades: [],
+          comentarios: [],
+          email: user.email || ""
+        });
+      }
+      const data = (await getDoc(userRef)).data();
+
+      document.getElementById("saldo-deudor").textContent = formatoMoneda(data.saldoDeudor);
+      document.getElementById("cargos-impago").textContent = formatoMoneda(data.cargosImpago);
+      document.getElementById("saldos-a-favor").textContent = formatoMoneda(data.saldosAFavor);
+      const upEl = document.getElementById("ultimo-pago");
+      if (data.ultimoPago && data.ultimoPago.monto) {
+        upEl.textContent = `${formatoMoneda(data.ultimoPago.monto)} el ${data.ultimoPago.fecha}`;
+      } else {
+        upEl.textContent = "Sin registros";
+      }
+
+      const tbody = document.querySelector("#propietarios-table tbody");
+      tbody.innerHTML = "";
+      if (Array.isArray(data.propiedades) && data.propiedades.length) {
+        data.propiedades.forEach(row => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${row.ID||""}</td>
+            <td>${row.propietario||""}</td>
+            <td>${row.unidad||""}</td>
+            <td>${row.saldo?formatoMoneda(row.saldo):"$0,00"}</td>
+            <td>${row.codigoQR||""}</td>
+            <td>${row.email||""}</td>
+            <td>${row.telefono||""}</td>
+            <td>${row.inquilinos||""}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } else {
+        tbody.innerHTML = `<tr><td colspan="8">No se encontraron datos.</td></tr>`;
+      }
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        window.location.href = "login.html";
+      } catch (error) {
+        console.error("Error cerrando sesión:", error);
+        alert("No se pudo cerrar la sesión.");
+      }
+    });
+  </script>
+</body>
+</html>
